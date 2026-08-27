@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miraculous212 — A Button-Based Miraculous RP Bot</title>
+<meta name="description" content="A Discord bot for Miraculous Ladybug-themed roleplay. Distribute all 19 Miraculous, transform under your own hero name, use every Kwami's power, and unify — all with buttons, no commands.">
+<link rel="icon" href="images/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #14101f;
+    --bg-1: #1b1530;
+    --bg-2: #241c3d;
+    --line: rgba(244,240,250,0.10);
+    --line-strong: rgba(244,240,250,0.18);
+    --text: #f4f0fa;
+    --text-muted: #a99dc9;
+    --text-dim: #756a92;
+    --ruby: #ef4a5f;
+    --gold: #eab649;
+    --jade: #3dc294;
+    --violet: #9b7ff0;
+    --radius-lg: 22px;
+    --radius-md: 14px;
+    --radius-sm: 8px;
+    --container: 1120px;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin:0;
+    background: radial-gradient(120% 90% at 15% -10%, #241a3f 0%, var(--bg) 45%),
+                var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  img{ max-width:100%; display:block; }
+  a{ color: inherit; }
+
+  h1, h2, h3, .display{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .eyebrow{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    display:flex;
+    align-items:center;
+    gap: 10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width: 18px; height: 1px;
+    background: var(--gold);
+    display:inline-block;
+  }
+  .container{
+    max-width: var(--container);
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+  section{ position: relative; }
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap: 8px;
+    padding: 13px 24px;
+    border-radius: 999px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+  }
+  .btn:active{ transform: translateY(1px); }
+  .btn-primary{
+    background: linear-gradient(135deg, var(--ruby), #d43a52);
+    color: #fff;
+    box-shadow: 0 10px 30px -12px rgba(239,74,95,0.65);
+  }
+  .btn-primary:hover{ box-shadow: 0 14px 34px -10px rgba(239,74,95,0.8); transform: translateY(-1px); }
+  .btn-ghost{
+    background: transparent;
+    color: var(--text);
+    border-color: var(--line-strong);
+  }
+  .btn-ghost:hover{ border-color: var(--gold); color: var(--gold); }
+  .btn-sm{ padding: 9px 16px; font-size: 13.5px; }
+
+  /* ---------- Nav ---------- */
+  header.nav{
+    position: sticky; top:0; z-index: 50;
+    backdrop-filter: blur(14px);
+    background: rgba(20,16,31,0.72);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 16px 28px;
+    max-width: var(--container);
+    margin: 0 auto;
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    font-family:'Fraunces', serif; font-weight:600; font-size: 19px;
+    text-decoration:none; color: var(--text);
+  }
+  .brand-mark{
+    width: 30px; height: 30px; border-radius: 9px;
+    background: conic-gradient(from 200deg, var(--ruby), var(--gold), var(--jade), var(--violet), var(--ruby));
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25);
+  }
+  nav.links{ display:flex; align-items:center; gap: 30px; }
+  nav.links a{
+    font-size: 14.5px; color: var(--text-muted); text-decoration:none;
+    transition: color .15s ease;
+  }
+  nav.links a:hover{ color: var(--text); }
+  .nav-cta{ display:flex; align-items:center; gap:14px; }
+  .nav-toggle{ display:none; background:none; border:none; color:var(--text); cursor:pointer; }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding: 96px 0 70px;
+    overflow: hidden;
+  }
+  .hero-inner{
+    display:grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 56px;
+    align-items:center;
+  }
+  .hero h1{
+    font-size: clamp(38px, 5vw, 60px);
+    line-height: 1.06;
+    margin: 18px 0 22px;
+  }
+  .hero h1 em{
+    font-style: normal;
+    background: linear-gradient(100deg, var(--gold), var(--ruby) 60%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .hero p.lead{
+    font-size: 17.5px;
+    color: var(--text-muted);
+    max-width: 480px;
+    margin-bottom: 34px;
+  }
+  .hero-ctas{ display:flex; gap:14px; flex-wrap:wrap; align-items:center; }
+  .hero-note{
+    margin-top: 18px;
+    font-size: 13px;
+    color: var(--text-dim);
+    font-family:'JetBrains Mono', monospace;
+  }
+
+  /* Gem constellation */
+  .gembox{
+    position: relative;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--line);
+    background: linear-gradient(155deg, var(--bg-2), var(--bg-1));
+    padding: 30px;
+    min-height: 420px;
+  }
+  .gembox-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .honeycomb{
+    display:flex; flex-wrap:wrap; gap: 12px;
+    justify-content:center;
+  }
+  .gem{
+    width: 56px; height: 56px;
+    display:flex; align-items:center; justify-content:center;
+    position: relative;
+    cursor: default;
+    transition: transform .18s ease, filter .18s ease;
+    filter: drop-shadow(0 10px 16px rgba(0,0,0,0.55));
+  }
+  .gem img{ width:100%; height:100%; object-fit: contain; display:block; }
+  .gem-fallback{
+    width:100%; height:100%;
+    border-radius: 12px;
+    display:none;
+    align-items:center; justify-content:center;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.28);
+    background: linear-gradient(155deg, var(--fc, #fff), rgba(0,0,0,0.35));
+  }
+  .gem:hover, .gem:focus-visible{
+    transform: translateY(-4px) scale(1.08); z-index: 3;
+    filter: drop-shadow(0 14px 22px rgba(0,0,0,0.6));
+  }
+  .gem:focus-visible{ outline: none; }
+  .gem::after{
+    content: attr(data-name);
+    position:absolute;
+    bottom: calc(100% + 12px);
+    left:50%; transform: translateX(-50%);
+    background: #0d0a17;
+    border: 1px solid var(--line-strong);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    white-space: nowrap;
+    padding: 7px 10px;
+    border-radius: 8px;
+    opacity:0; pointer-events:none;
+    transition: opacity .15s ease, transform .15s ease;
+  }
+  .gem:hover::after, .gem:focus-visible::after{ opacity:1; transform: translateX(-50%) translateY(-2px); }
+
+  /* ---------- Section shell ---------- */
+  .section{ padding: 90px 0; }
+  .section-head{ max-width: 620px; margin-bottom: 52px; }
+  .section-head h2{ font-size: clamp(28px, 3.4vw, 38px); margin-top: 14px; }
+  .section-head p{ color: var(--text-muted); font-size: 16px; margin-top: 14px; }
+  .divider{ height:1px; background: var(--line); border:none; margin:0; }
+
+  /* ---------- Features ---------- */
+  .features{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .feature-card{
+    border: 1px solid var(--line);
+    background: var(--bg-1);
+    border-radius: var(--radius-md);
+    padding: 26px 24px;
+    transition: border-color .2s ease, transform .2s ease;
+  }
+  .feature-card:hover{ border-color: var(--line-strong); transform: translateY(-3px); }
+  .feature-icon{
+    width: 40px; height: 40px;
+    border-radius: 11px;
+    display:flex; align-items:center; justify-content:center;
+    font-size: 19px;
+    margin-bottom: 16px;
+  }
+  .feature-card h3{ font-size: 17.5px; margin-bottom: 8px; font-weight:600; }
+  .feature-card p{ color: var(--text-muted); font-size: 14.5px; margin:0; }
+
+  /* ---------- Showcase / screenshots ---------- */
+  .showcase{
+    display:grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 20px;
+  }
+  .shot{
+    border-radius: var(--radius-md);
+    border: 1px solid var(--line);
+    background: var(--bg-1);
+    overflow: hidden;
+    position: relative;
+  }
+  .shot img{ width:100%; height:100%; object-fit: contain; display:block; }
+  .shot .fallback{
+    width:100%; height:100%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap: 10px;
+    color: var(--text-dim);
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    text-align:center;
+    padding: 20px;
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 14px);
+  }
+  /* Aspect ratios match each screenshot's real dimensions, so the box is
+     sized correctly whether the real image or the fallback is showing. */
+  .shot-panel{     aspect-ratio: 1659 / 680;  }
+  .shot-transform{ aspect-ratio: 2537 / 1438; }
+  .shot-guardian{  aspect-ratio: 1666 / 331;  }
+  .shot-caption{
+    padding: 14px 18px;
+    border-top: 1px solid var(--line);
+    font-size: 13.5px;
+    color: var(--text-muted);
+  }
+  .showcase-col{ display:flex; flex-direction:column; gap:20px; }
+
+  /* ---------- Miracle Box grid (full 19) ---------- */
+  .box-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+    gap: 12px;
+  }
+  .box-card{
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    background: var(--bg-1);
+    display:flex; flex-direction:column; gap: 10px;
+    transition: border-color .18s ease, transform .18s ease;
+  }
+  .box-card:hover{ border-color: var(--line-strong); transform: translateY(-2px); }
+  .box-swatch{
+    width: 30px; height: 30px;
+    position: relative;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+  }
+  .box-swatch img{ width:100%; height:100%; object-fit: contain; display:block; }
+  .box-swatch .gem-fallback{ border-radius: 8px; }
+  .box-card .kwami{ font-weight:600; font-size: 14.5px; }
+  .box-card .name{ font-size: 12.5px; color: var(--text-dim); }
+  .box-card .power{ font-size: 12.5px; color: var(--text-muted); margin-top: auto; padding-top: 6px; border-top: 1px dashed var(--line); }
+
+  /* ---------- Steps ---------- */
+  .steps{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .step{ position:relative; padding-left: 2px; }
+  .step .num{
+    font-family:'Fraunces', serif;
+    font-size: 38px;
+    color: transparent;
+    -webkit-text-stroke: 1.4px var(--line-strong);
+    margin-bottom: 10px;
+    display:block;
+  }
+  .step h3{ font-size: 16.5px; margin-bottom: 8px; }
+  .step p{ color: var(--text-muted); font-size: 14.5px; }
+  .step code{
+    font-family:'JetBrains Mono', monospace;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--gold);
+  }
+
+  /* ---------- FAQ ---------- */
+  .faq-item{
+    border-bottom: 1px solid var(--line);
+    padding: 22px 0;
+  }
+  .faq-item h3{ font-size: 16px; font-weight:600; margin-bottom:8px; }
+  .faq-item p{ color: var(--text-muted); font-size: 14.5px; margin:0; }
+
+  /* ---------- CTA band ---------- */
+  .cta-band{
+    border-radius: var(--radius-lg);
+    padding: 56px 48px;
+    background: linear-gradient(120deg, #2a1b3e, #1c1530 55%, #2b1a24);
+    border: 1px solid var(--line-strong);
+    display:flex; align-items:center; justify-content:space-between; gap: 30px;
+    flex-wrap: wrap;
+  }
+  .cta-band h2{ font-size: 26px; max-width: 420px; }
+  .cta-band p{ color: var(--text-muted); margin-top:10px; max-width: 420px; font-size:14.5px; }
+
+  /* ---------- Footer ---------- */
+  footer{
+    border-top: 1px solid var(--line);
+    padding: 44px 0 34px;
+    margin-top: 40px;
+  }
+  .footer-inner{ display:flex; justify-content:space-between; align-items:flex-start; gap: 24px; flex-wrap: wrap; }
+  .footer-brand{ display:flex; align-items:center; gap:10px; font-family:'Fraunces', serif; font-weight:600; }
+  .footer-disclaimer{ color: var(--text-dim); font-size: 12.5px; max-width: 480px; margin-top: 10px; line-height:1.6; }
+  .footer-links{ display:flex; gap: 26px; }
+  .footer-links a{ color: var(--text-muted); text-decoration:none; font-size: 14px; }
+  .footer-links a:hover{ color: var(--text); }
+
+  /* ---------- Reveal on scroll ---------- */
+  .reveal{ opacity: 0; transform: translateY(16px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.is-visible{ opacity: 1; transform: translateY(0); }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior: auto; }
+    .reveal{ opacity:1; transform:none; transition:none; }
+    .gem, .feature-card, .box-card, .btn{ transition: none; }
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 940px){
+    .hero-inner{ grid-template-columns: 1fr; }
+    .features{ grid-template-columns: repeat(2, 1fr); }
+    .showcase{ grid-template-columns: 1fr; }
+    .steps{ grid-template-columns: 1fr; }
+    nav.links{ display:none; }
+    .nav-toggle{ display:block; }
+  }
+  @media (max-width: 560px){
+    .features{ grid-template-columns: 1fr; }
+    .cta-band{ padding: 36px 26px; flex-direction:column; align-items:flex-start; }
+    .hero{ padding-top: 76px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="#top" class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      Miraculous212
+    </a>
+    <nav class="links">
+      <a href="#features">Features</a>
+      <a href="#box">The Box</a>
+      <a href="#how">Setup</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="https://discord.com/oauth2/authorize?client_id=1539606318053335060&permissions=8&integration_type=0&scope=bot" class="btn btn-primary btn-sm" target="_blank" rel="noopener">Add to Discord</a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <div class="container hero-inner">
+      <div>
+        <div class="eyebrow">A Discord bot for Miraculous roleplay</div>
+        <h1>Every Kwami.<br>Every power. <em>Zero commands.</em></h1>
+        <p class="lead">
+          Miraculous212 hands your server all 19 Miraculous from the show — Guardian
+          included. Members transform under a hero name of their own choosing,
+          use their Kwami's actual signature power, and unify two or more
+          Miraculous into a single fused form. Everything runs on buttons and
+          dropdowns, so nobody has to memorize a single command.
+        </p>
+        <div class="hero-ctas">
+          <a href="https://discord.com/oauth2/authorize?client_id=1539606318053335060&permissions=8&integration_type=0&scope=bot" class="btn btn-primary" target="_blank" rel="noopener">Add to Discord</a>
+          <a href="#how" class="btn btn-ghost">See how it works</a>
+        </div>
+        <div class="hero-note">/panel · one command, ever</div>
+      </div>
+
+      <div class="gembox reveal">
+        <div class="gembox-label">The full Miracle Box — 19 Miraculous</div>
+        <div class="honeycomb" id="gem-grid"></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ================= FEATURES ================= -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">What it does</div>
+        <h2>Built around how the Box actually works</h2>
+        <p>Every mechanic below maps to something the bot genuinely tracks per
+          server — not flavor text bolted onto a generic bot.</p>
+      </div>
+
+      <div class="features">
+        <div class="feature-card reveal">
+          <div class="feature-icon" style="background:rgba(239,74,95,0.14); color:var(--ruby);">🐞</div>
+          <h3>Pick your own hero name</h3>
+          <p>Nobody is stuck being "Ladybug." Set your alias once when you first
+            transform with a Miraculous — it's remembered from then on.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon" style="background:rgba(234,182,73,0.14); color:var(--gold);">💥</div>
+          <h3>Use Power, for real</h3>
+          <p>Lucky Charm, Cataclysm, Venom, Akumatize, Sublimation, Gift —
+            every one of the 19 signature moves has its own working action.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon" style="background:rgba(61,194,148,0.14); color:var(--jade);">🔗</div>
+          <h3>Unify</h3>
+          <p>Hold two or more Miraculous at once and fuse them into a single
+            transformation, gaining every power and tool together.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon" style="background:rgba(155,127,240,0.14); color:var(--violet);">🛡️</div>
+          <h3>A real Guardian role</h3>
+          <p>One member distributes the Box — giving, reclaiming, and handing
+            off Guardian duty — without touching anyone else's powers.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon" style="background:rgba(239,74,95,0.14); color:var(--ruby);">🦋</div>
+          <h3>Akumatize is yours, not theirs</h3>
+          <p>Whoever holds the Butterfly wields it. Same for the Peacock's
+            Amok. Using a power never depends on being the Guardian.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon" style="background:rgba(234,182,73,0.14); color:var(--gold);">🖱️</div>
+          <h3>Buttons, not memorization</h3>
+          <p>One slash command posts the panel. Every action after that —
+            transform, unify, distribute — is a click, not a typed line.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ================= SCREENSHOTS ================= -->
+  <section class="section" id="showcase">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Inside the panel</div>
+        <h2>What members actually see</h2>
+        <p>Drop your own screenshots into <code style="font-family:'JetBrains Mono',monospace;background:var(--bg-2);padding:2px 7px;border-radius:6px;border:1px solid var(--line);color:var(--gold);">/images</code> — the frames below are already wired up to display them.</p>
+      </div>
+
+      <div class="showcase reveal">
+        <div class="shot shot-panel">
+          <img src="images/screenshot-panel.png" alt="The Miracle Box control panel with its buttons"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="fallback" style="display:none;">
+            Add <strong>images/screenshot-panel.png</strong><br>
+            (the main control panel with all buttons)
+          </div>
+          <div class="shot-caption">The main panel — posted once with <code style="font-family:'JetBrains Mono',monospace; color:var(--gold);">/panel</code>, used forever after.</div>
+        </div>
+
+        <div class="showcase-col">
+          <div class="shot shot-transform">
+            <img src="images/screenshot-transform.png" alt="Choosing a hero name when transforming"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="fallback" style="display:none;">
+              Add <strong>images/screenshot-transform.png</strong><br>
+              (the hero-name prompt)
+            </div>
+            <div class="shot-caption">Choosing a hero name on first transformation.</div>
+          </div>
+          <div class="shot shot-guardian">
+            <img src="images/screenshot-guardian.png" alt="The Guardian distribution panel"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="fallback" style="display:none;">
+              Add <strong>images/screenshot-guardian.png</strong><br>
+              (Guardian give/take controls)
+            </div>
+            <div class="shot-caption">The Guardian's distribution controls.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ================= THE BOX (all 19) ================= -->
+  <section class="section" id="box">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">The complete roster</div>
+        <h2>All 19 Miraculous, accounted for</h2>
+        <p>The seven main Miraculous plus all twelve zodiac ones — every Kwami,
+          jewel, and signature power your server can hand out.</p>
+      </div>
+
+      <div class="box-grid reveal" id="box-grid"></div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ================= HOW IT WORKS ================= -->
+  <section class="section" id="how">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Setup</div>
+        <h2>Three steps, then it's all clicks</h2>
+      </div>
+
+      <div class="steps">
+        <div class="step reveal">
+          <span class="num">01</span>
+          <h3>Invite the bot</h3>
+          <p>Add Miraculous212 to your server with the button above — it only
+            needs permission to send messages and use slash commands.</p>
+        </div>
+        <div class="step reveal">
+          <span class="num">02</span>
+          <h3>Post the panel</h3>
+          <p>Type <code>/panel</code> once in any channel. It stays there
+            permanently — nobody needs to type it again.</p>
+        </div>
+        <div class="step reveal">
+          <span class="num">03</span>
+          <h3>Assign a Guardian</h3>
+          <p>Give someone the <code>Guardian</code> role, or set one from the
+            panel. They hand out the Box; everyone else just clicks.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ================= FAQ ================= -->
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Questions</div>
+        <h2>Before you add it</h2>
+      </div>
+
+      <div class="reveal">
+        <div class="faq-item">
+          <h3>Do members have to type any commands?</h3>
+          <p>No. The only typed action in the entire bot is the one-time
+            <code style="font-family:'JetBrains Mono',monospace;color:var(--gold);">/panel</code> command. Every action after that — transforming,
+            using a power, distributing the Box — is a button or a dropdown.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Can one member hold more than one Miraculous?</h3>
+          <p>Yes — this is required for Unify. The Guardian can give the same
+            member several Miraculous, and their "My Miraculous" screen lists
+            every one they're holding.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Who can use Akumatize or Amok?</h3>
+          <p>Whoever is transformed with the Butterfly or Peacock Miraculous —
+            not necessarily the Guardian. Distribution and power use are kept
+            separate on purpose.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Does the bot save progress?</h3>
+          <p>Yes. Who holds what, who's transformed, and every chosen hero
+            name are all saved per server and survive a restart.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CTA BAND ================= -->
+  <section class="container" style="padding-bottom: 90px;">
+    <div class="cta-band reveal">
+      <div>
+        <h2>Open the Box in your server</h2>
+        <p>One invite, one command, and your server's Guardian is ready to
+          hand out all 19 Miraculous.</p>
+      </div>
+      <a href="https://discord.com/oauth2/authorize?client_id=1539606318053335060&permissions=8&integration_type=0&scope=bot" class="btn btn-primary" target="_blank" rel="noopener">Add to Discord</a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container footer-inner">
+    <div>
+      <div class="footer-brand">
+        <span class="brand-mark" aria-hidden="true" style="width:22px;height:22px;border-radius:7px;"></span>
+        Miraculous212
+      </div>
+      <p class="footer-disclaimer">
+        Miraculous212 is an unofficial, fan-made Discord bot for Miraculous
+        Ladybug-themed roleplay servers. Not affiliated with, sponsored by,
+        or endorsed by Zagtoon, Method Animation, or the official
+        Miraculous Ladybug franchise.
+      </p>
+    </div>
+    <div class="footer-links">
+      <a href="#features">Features</a>
+      <a href="#box">The Box</a>
+      <a href="#how">Setup</a>
+      <a href="#faq">FAQ</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ---- Miraculous data (kept in sync with the bot's own roster) ----
+  const MIRACULOUS = [
+    { name:"Ladybug",    kwami:"Tikki",  power:"Lucky Charm",         color:"#e8434a" },
+    { name:"Black Cat",  kwami:"Plagg",  power:"Cataclysm",           color:"#3a3540" },
+    { name:"Fox",        kwami:"Trixx",  power:"Mirage",              color:"#ff8c00" },
+    { name:"Bee",        kwami:"Pollen", power:"Venom",                color:"#e8b649" },
+    { name:"Turtle",     kwami:"Wayzz",  power:"Shell-ter",            color:"#2e8b57" },
+    { name:"Peacock",    kwami:"Duusu",  power:"Amok / Sentimonster",  color:"#2fbfc4" },
+    { name:"Butterfly",  kwami:"Nooroo", power:"Akumatize",            color:"#9b4fb0" },
+    { name:"Mouse",      kwami:"Mullo",  power:"Multitude",            color:"#8a8a94" },
+    { name:"Ox",         kwami:"Stompp", power:"Resistance",           color:"#345a82" },
+    { name:"Tiger",      kwami:"Roaar",  power:"Clout",                color:"#c7317f" },
+    { name:"Rabbit",     kwami:"Fluff",  power:"Burrow",               color:"#f0a8bb" },
+    { name:"Dragon",     kwami:"Longg",  power:"Gale Force",           color:"#2e8b6e" },
+    { name:"Snake",      kwami:"Sass",   power:"Second Chance",        color:"#9146c9" },
+    { name:"Horse",      kwami:"Kaalki", power:"Voyage",               color:"#3390e0" },
+    { name:"Goat",       kwami:"Ziggy",  power:"Genesis",              color:"#565f6b" },
+    { name:"Monkey",     kwami:"Xuppu",  power:"Uproar",               color:"#daa520" },
+    { name:"Rooster",    kwami:"Orikko", power:"Sublimation",          color:"#c23a3a" },
+    { name:"Dog",        kwami:"Barkk",  power:"Fetch",                color:"#a06a3d" },
+    { name:"Pig",        kwami:"Daizzi", power:"Gift",                 color:"#f0a8b8" },
+  ];
+
+  // ---- File-based gem art: images/gems/<slug>.png, with a colored
+  // fallback (no broken-image icon) if that file hasn't been added yet ----
+  function slug(name){ return name.toLowerCase().replace(/\s+/g, '-'); }
+
+  function gemMarkup(m){
+    const src = `images/gems/${slug(m.name)}.png`;
+    return `<img src="${src}" alt="${m.name} Miraculous gem" loading="lazy"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="gem-fallback" style="--fc:${m.color};"></div>`;
+  }
+
+  const gemGrid = document.getElementById('gem-grid');
+  MIRACULOUS.forEach(m => {
+    const gem = document.createElement('div');
+    gem.className = 'gem';
+    gem.innerHTML = gemMarkup(m);
+    gem.setAttribute('data-name', `${m.kwami} — ${m.power}`);
+    gem.setAttribute('tabindex', '0');
+    gem.setAttribute('role', 'img');
+    gem.setAttribute('aria-label', `${m.name} Miraculous, Kwami ${m.kwami}, power ${m.power}`);
+    gemGrid.appendChild(gem);
+  });
+
+  const boxGrid = document.getElementById('box-grid');
+  MIRACULOUS.forEach(m => {
+    const card = document.createElement('div');
+    card.className = 'box-card';
+    card.innerHTML = `
+      <div class="box-swatch" role="img" aria-label="${m.name} Miraculous gem">${gemMarkup(m)}</div>
+      <div class="kwami">${m.kwami}</div>
+      <div class="name">${m.name} Miraculous</div>
+      <div class="power">${m.power}</div>
+    `;
+    boxGrid.appendChild(card);
+  });
+
+  // ---- Scroll reveal ----
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!prefersReduced && 'IntersectionObserver' in window){
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('is-visible'); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  } else {
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('is-visible'));
+  }
+</script>
+
+</body>
+</html>
